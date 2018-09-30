@@ -18,6 +18,11 @@ type StreamPlaylist struct {
 	ListType m3u8.ListType
 }
 
+type Stream struct {
+	Quality  string
+	Playlist m3u8.Playlist
+}
+
 type StreamApi struct {
 	ClientId string
 	Http     *http.Client
@@ -87,5 +92,19 @@ func (api StreamApi) getHLS(user User, token AccessToken) StreamPlaylist {
 	return StreamPlaylist{
 		playlist,
 		listtype,
+	}
+}
+
+func (api StreamApi) GetBest(playlist StreamPlaylist) Stream {
+	masterPlaylist := playlist.Playlist.(*m3u8.MasterPlaylist)
+	variant := masterPlaylist.Variants[0]
+
+	response := api.get(variant.URI, map[string]string{})
+
+	mediaPlaylist, _, _ := m3u8.DecodeFrom(response.Body, true)
+
+	return Stream{
+		variant.VariantParams.Resolution,
+		mediaPlaylist,
 	}
 }
