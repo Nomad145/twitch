@@ -15,12 +15,13 @@ var vlc = exec.Command("cvlc", "-")
 var pipe, _ = vlc.StdinPipe()
 
 func (player Player) StartStream(user User) {
-	go player.fetchSegments(user)
+	go player.processSegments(user)
+	go player.downloadSegments()
 
-	player.downloadSegments()
+	vlc.Run()
 }
 
-func (player Player) fetchSegments(user User) {
+func (player Player) processSegments(user User) {
 	segmentCache := make(map[string]string)
 	masterPlaylist := player.Stream.GetMasterPlaylist(user)
 
@@ -28,17 +29,17 @@ func (player Player) fetchSegments(user User) {
 		stream := player.Stream.GetMediaPlaylist(masterPlaylist)
 		mediaPlaylist := stream.Playlist.(*m3u8.MediaPlaylist)
 
-		for _, v := range mediaPlaylist.Segments {
-			if v == nil {
+		for _, segment := range mediaPlaylist.Segments {
+			if segment == nil {
 				continue
 			}
 
-			if _, hit := segmentCache[v.ProgramDateTime.String()]; hit {
+			if _, hit := segmentCache[segment.ProgramDateTime.String()]; hit {
 				continue
 			}
 
-			segments <- v.URI
-			segmentCache[v.ProgramDateTime.String()] = v.URI
+			segments <- segment.URI
+			segmentCache[segment.ProgramDateTime.String()] = segment.URI
 		}
 
 		time.Sleep(time.Second * 28)
@@ -47,8 +48,6 @@ func (player Player) fetchSegments(user User) {
 }
 
 func (player Player) downloadSegments() {
-	vlc.Start()
-
 	for segment := range segments {
 		player.Stream.DownloadSegment(segment, pipe)
 	}

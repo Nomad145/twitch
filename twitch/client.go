@@ -10,15 +10,16 @@ type Client struct {
 	Player *Player
 }
 
-func NewClient(clientId string) *Client {
+func NewClient(clientId string, accessToken string) *Client {
 	http := &http.Client{
 		Timeout: time.Second * 2,
 	}
 
 	return &Client{
 		User: &UserApi{
-			ClientId: clientId,
-			Http:     http,
+			ClientId:    clientId,
+			AccessToken: accessToken,
+			Http:        http,
 		},
 		Player: &Player{
 			Stream: &StreamApi{
