@@ -10,10 +10,13 @@ type Client struct {
 	Player *Player
 }
 
-func NewClient(clientId string, accessToken string) *Client {
+func NewClient() *Client {
 	http := &http.Client{
 		Timeout: time.Second * 2,
 	}
+
+	accessToken := GetAccessToken()
+	clientId := "g0m4aoe1qgv0lqais31yp27yzvw603"
 
 	return &Client{
 		User: &UserApi{

@@ -9,9 +9,9 @@ import (
 )
 
 const CLIENT_ID = "g0m4aoe1qgv0lqais31yp27yzvw603"
-const ACCESS_TOKEN = "iwrumiqe5ak9a89h586nd0xenro3b2"
+const CLIENT_SECRET = "rftkcblmnloq5q8ndm4i92kpbt6o8t"
 
-var client = twitch.NewClient(CLIENT_ID, ACCESS_TOKEN)
+var client = twitch.NewClient()
 var list = flag.Bool("list", false, "List live channels")
 var tabWriter = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
