@@ -30,7 +30,7 @@ type StreamApi struct {
 const TOKEN_URL = "https://api.twitch.tv/channels/%s/access_token"
 const HLS_URL = "https://usher.ttvnw.net/api/channel/hls/%s.m3u8"
 
-func (api StreamApi) GetMasterPlaylist(user User) StreamPlaylist {
+func (api StreamApi) GetMasterPlaylist(user string) StreamPlaylist {
 	token := api.getAccessToken(user)
 	playlist := api.fetchMasterPlaylist(user, token)
 
@@ -39,9 +39,9 @@ func (api StreamApi) GetMasterPlaylist(user User) StreamPlaylist {
 	return playlist
 }
 
-func (api StreamApi) getAccessToken(user User) AccessToken {
+func (api StreamApi) getAccessToken(user string) AccessToken {
 	token := AccessToken{}
-	request, _ := http.NewRequest("GET", fmt.Sprintf(TOKEN_URL, user.Login), nil)
+	request, _ := http.NewRequest("GET", fmt.Sprintf(TOKEN_URL, user), nil)
 	request.Header.Add("Client-ID", api.ClientId)
 
 	response, err := api.Http.Do(request)
@@ -61,8 +61,8 @@ func (api StreamApi) getAccessToken(user User) AccessToken {
 	return token
 }
 
-func (api StreamApi) fetchMasterPlaylist(user User, token AccessToken) StreamPlaylist {
-	request, _ := http.NewRequest("GET", fmt.Sprintf(HLS_URL, user.Login), nil)
+func (api StreamApi) fetchMasterPlaylist(user string, token AccessToken) StreamPlaylist {
+	request, _ := http.NewRequest("GET", fmt.Sprintf(HLS_URL, user), nil)
 
 	params := url.Values{}
 	params.Set("sig", token.Sig)
@@ -113,8 +113,12 @@ func (api StreamApi) GetMediaPlaylist(playlist StreamPlaylist) StreamPlaylist {
 
 func (api StreamApi) RefreshPlaylist(playlist StreamPlaylist) StreamPlaylist {
 	response, _ := http.Get(playlist.URL)
+	refreshedPlaylist, listType, err := m3u8.DecodeFrom(response.Body, true)
 
-	refreshedPlaylist, listType, _ := m3u8.DecodeFrom(response.Body, true)
+	if refreshedPlaylist == nil {
+		log.Println(err)
+		log.Println("Playlist was nil...")
+	}
 
 	return StreamPlaylist{
 		refreshedPlaylist,

@@ -13,7 +13,7 @@ import (
 func GetAccessToken() string {
 	if tokenExists() {
 		token := getStoredToken()
-		refreshToken(token)
+		token = refreshToken(token)
 
 		return token.AccessToken
 	}
@@ -26,7 +26,7 @@ func GetAccessToken() string {
 
 func buildConfig() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     os.Getenv("TWITCH_CLIENT_ID"),
+		ClientID:     clientId,
 		ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
 		Scopes:       []string{"user:read:email"},
 		RedirectURL:  "http://localhost",
@@ -84,6 +84,8 @@ func refreshToken(token oauth2.Token) oauth2.Token {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	storeToken(*refreshedToken)
 
 	return *refreshedToken
 }

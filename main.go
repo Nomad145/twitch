@@ -8,9 +8,6 @@ import (
 	"text/tabwriter"
 )
 
-const CLIENT_ID = "g0m4aoe1qgv0lqais31yp27yzvw603"
-const CLIENT_SECRET = "rftkcblmnloq5q8ndm4i92kpbt6o8t"
-
 var client = twitch.NewClient()
 var list = flag.Bool("list", false, "List live channels")
 var tabWriter = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
@@ -22,7 +19,7 @@ func main() {
 		liveStreams := client.User.GetLiveStreams()
 
 		for _, stream := range liveStreams {
-			fmt.Fprintln(tabWriter, stream.Channel.Name + "\t" + stream.Channel.Game)
+			fmt.Fprintln(tabWriter, stream.Channel.Name + "\t" + stream.Channel.Game + "\t" + stream.Channel.Status)
 		}
 
 		tabWriter.Flush()
@@ -31,8 +28,6 @@ func main() {
 	}
 
 	if len(flag.Args()) > 0 {
-		user := client.User.GetUser(flag.Args()[0])
-
-		client.Player.StartStream(user)
+		client.Player.StartStream(flag.Args()[0])
 	}
 }

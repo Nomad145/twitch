@@ -4,6 +4,7 @@ import (
 	"github.com/grafov/m3u8"
 	"os/exec"
 	"time"
+	"log"
 )
 
 type Player struct {
@@ -14,19 +15,28 @@ var segments = make(chan string, 30)
 var vlc = exec.Command("cvlc", "-")
 var pipe, _ = vlc.StdinPipe()
 
-func (player Player) StartStream(user User) {
+func (player Player) StartStream(user string) {
 	go player.processSegments(user)
 	go player.downloadSegments()
 
 	vlc.Run()
 }
 
-func (player Player) processSegments(user User) {
+func (player Player) processSegments(user string) {
 	segmentCache := make(map[string]string)
 	masterPlaylist := player.Stream.GetMasterPlaylist(user)
 
 	for {
+		if masterPlaylist.Playlist == nil {
+			masterPlaylist = player.Stream.GetMasterPlaylist(user)
+
+			log.Println("Stream playlist was empty")
+
+			continue
+		}
+
 		stream := player.Stream.GetMediaPlaylist(masterPlaylist)
+
 		mediaPlaylist := stream.Playlist.(*m3u8.MediaPlaylist)
 
 		for _, segment := range mediaPlaylist.Segments {
