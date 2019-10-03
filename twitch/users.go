@@ -12,8 +12,8 @@ type Stream struct {
 }
 
 type Channel struct {
-	Name string `json:"name"`
-	Game string `json:"game"`
+	Name   string `json:"name"`
+	Game   string `json:"game"`
 	Status string `json:"status"`
 }
 
@@ -29,6 +29,7 @@ func (api UserApi) GetLiveStreams() []Stream {
 	request, _ := http.NewRequest("GET", LIVE_CHANNELS_URL, nil)
 	request.Header.Add("Client-ID", api.ClientId)
 	request.Header.Add("Authorization", fmt.Sprintf("OAuth %s", api.AccessToken))
+	request.Header.Add("Accept", "application.vnd.twitchtv.v5+json")
 	response, err := api.Http.Do(request)
 
 	if err != nil {
