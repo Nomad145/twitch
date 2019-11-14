@@ -2,9 +2,9 @@ package twitch
 
 import (
 	"github.com/grafov/m3u8"
-	"os/exec"
-	"time"
+	"io/ioutil"
 	"log"
+	"os/exec"
 )
 
 type Player struct {
@@ -12,12 +12,14 @@ type Player struct {
 }
 
 var segments = make(chan string, 30)
+var adSegments = make(chan string, 30)
 var vlc = exec.Command("cvlc", "-")
 var pipe, _ = vlc.StdinPipe()
 
 func (player Player) StartStream(user string) {
 	go player.processSegments(user)
 	go player.downloadSegments()
+	go player.downloadAdSegments()
 
 	vlc.Run()
 }
@@ -48,11 +50,15 @@ func (player Player) processSegments(user string) {
 				continue
 			}
 
+			if segment.Title != "live" {
+
+				continue
+			}
+
 			segments <- segment.URI
 			segmentCache[segment.ProgramDateTime.String()] = segment.URI
 		}
 
-		time.Sleep(time.Second * 28)
 		masterPlaylist = player.Stream.RefreshPlaylist(masterPlaylist)
 	}
 }
@@ -60,5 +66,11 @@ func (player Player) processSegments(user string) {
 func (player Player) downloadSegments() {
 	for segment := range segments {
 		player.Stream.DownloadSegment(segment, pipe)
+	}
+}
+
+func (player Player) downloadAdSegments() {
+	for segment := range adSegments {
+		player.Stream.DownloadSegment(segment, ioutil.Discard)
 	}
 }
