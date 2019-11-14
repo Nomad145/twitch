@@ -16,7 +16,7 @@ func main() {
 	flag.Parse()
 
 	if *list {
-		liveStreams := client.User.GetLiveStreams()
+		liveStreams := client.ListStreams()
 
 		for _, stream := range liveStreams {
 			fmt.Fprintln(tabWriter, stream.Channel.Name+"\t"+stream.Channel.Game+"\t"+stream.Channel.Status)
@@ -28,6 +28,6 @@ func main() {
 	}
 
 	if len(flag.Args()) > 0 {
-		client.Player.StartStream(flag.Args()[0])
+		client.Play(flag.Args()[0])
 	}
 }

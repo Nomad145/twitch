@@ -11,6 +11,13 @@ import (
 	"net/url"
 )
 
+type MediaPlaylistProvider interface {
+	DownloadSegment(url string, writer io.Writer)
+	GetMasterPlaylist(user string) StreamPlaylist
+	RefreshPlaylist(playlist StreamPlaylist) StreamPlaylist
+	GetMediaPlaylist(playlist StreamPlaylist) StreamPlaylist
+}
+
 type AccessToken struct {
 	Sig   string
 	Token string
@@ -22,7 +29,7 @@ type StreamPlaylist struct {
 	URL      string
 }
 
-type StreamApi struct {
+type TwitchProvider struct {
 	ClientId string
 	Http     *http.Client
 }
@@ -30,7 +37,7 @@ type StreamApi struct {
 const TOKEN_URL = "https://api.twitch.tv/channels/%s/access_token"
 const HLS_URL = "https://usher.ttvnw.net/api/channel/hls/%s.m3u8"
 
-func (api StreamApi) GetMasterPlaylist(user string) StreamPlaylist {
+func (api TwitchProvider) GetMasterPlaylist(user string) StreamPlaylist {
 	token := api.getAccessToken(user)
 	playlist := api.fetchMasterPlaylist(user, token)
 
@@ -39,7 +46,7 @@ func (api StreamApi) GetMasterPlaylist(user string) StreamPlaylist {
 	return playlist
 }
 
-func (api StreamApi) getAccessToken(user string) AccessToken {
+func (api TwitchProvider) getAccessToken(user string) AccessToken {
 	token := AccessToken{}
 	request, _ := http.NewRequest("GET", fmt.Sprintf(TOKEN_URL, user), nil)
 	request.Header.Add("Client-ID", api.ClientId)
@@ -61,7 +68,7 @@ func (api StreamApi) getAccessToken(user string) AccessToken {
 	return token
 }
 
-func (api StreamApi) fetchMasterPlaylist(user string, token AccessToken) StreamPlaylist {
+func (api TwitchProvider) fetchMasterPlaylist(user string, token AccessToken) StreamPlaylist {
 	request, _ := http.NewRequest("GET", fmt.Sprintf(HLS_URL, user), nil)
 
 	params := url.Values{}
@@ -92,7 +99,7 @@ func (api StreamApi) fetchMasterPlaylist(user string, token AccessToken) StreamP
 	}
 }
 
-func (api StreamApi) GetMediaPlaylist(playlist StreamPlaylist) StreamPlaylist {
+func (api TwitchProvider) GetMediaPlaylist(playlist StreamPlaylist) StreamPlaylist {
 	masterPlaylist := playlist.Playlist.(*m3u8.MasterPlaylist)
 	variant := masterPlaylist.Variants[0]
 
@@ -111,7 +118,7 @@ func (api StreamApi) GetMediaPlaylist(playlist StreamPlaylist) StreamPlaylist {
 	}
 }
 
-func (api StreamApi) RefreshPlaylist(playlist StreamPlaylist) StreamPlaylist {
+func (api TwitchProvider) RefreshPlaylist(playlist StreamPlaylist) StreamPlaylist {
 	response, _ := http.Get(playlist.URL)
 	refreshedPlaylist, listType, err := m3u8.DecodeFrom(response.Body, true)
 
@@ -127,7 +134,7 @@ func (api StreamApi) RefreshPlaylist(playlist StreamPlaylist) StreamPlaylist {
 	}
 }
 
-func (api StreamApi) DownloadSegment(url string, target io.Writer) {
+func (api TwitchProvider) DownloadSegment(url string, target io.Writer) {
 	segment, err := http.Get(url)
 
 	if err != nil {

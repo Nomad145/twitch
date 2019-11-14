@@ -2,12 +2,13 @@ package twitch
 
 import (
 	"net/http"
+	"os/exec"
 	"time"
 )
 
 type Client struct {
-	User   *UserApi
-	Player *Player
+	user          *UserApi
+	streamHandler LiveStream
 }
 
 const clientId = "g0m4aoe1qgv0lqais31yp27yzvw603"
@@ -20,16 +21,29 @@ func NewClient() *Client {
 	accessToken := GetAccessToken()
 
 	return &Client{
-		User: &UserApi{
+		user: &UserApi{
 			ClientId:    clientId,
 			AccessToken: accessToken,
 			Http:        http,
 		},
-		Player: &Player{
-			Stream: &StreamApi{
+		streamHandler: &HttpLiveStream{
+			provider: &TwitchProvider{
 				ClientId: clientId,
 				Http:     http,
 			},
 		},
 	}
+}
+
+func (client Client) Play(stream string) {
+	vlc := exec.Command("cvlc", "-")
+	pipe, _ := vlc.StdinPipe()
+
+	client.streamHandler.Start(stream, pipe)
+
+	vlc.Run()
+}
+
+func (client Client) ListStreams() []Stream {
+	return client.user.GetLiveStreams()
 }
