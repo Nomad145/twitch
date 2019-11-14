@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./twitch"
 	"flag"
 	"fmt"
+	"github.com/michaeljoelphillips/twitch/internal/twitch"
 	"os"
 	"text/tabwriter"
 )
@@ -19,7 +19,7 @@ func main() {
 		liveStreams := client.User.GetLiveStreams()
 
 		for _, stream := range liveStreams {
-			fmt.Fprintln(tabWriter, stream.Channel.Name + "\t" + stream.Channel.Game + "\t" + stream.Channel.Status)
+			fmt.Fprintln(tabWriter, stream.Channel.Name+"\t"+stream.Channel.Game+"\t"+stream.Channel.Status)
 		}
 
 		tabWriter.Flush()
