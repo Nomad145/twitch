@@ -68,7 +68,7 @@ func (api StreamApi) fetchMasterPlaylist(user string, token AccessToken) StreamP
 	params.Set("sig", token.Sig)
 	params.Set("token", token.Token)
 	params.Set("player", "twitchweb")
-	params.Set("p", "707780")
+	params.Set("p", "707790")
 	params.Set("type", "any")
 	params.Set("allow_source", "true")
 	params.Set("allow_audio_only", "true")
@@ -127,7 +127,7 @@ func (api StreamApi) RefreshPlaylist(playlist StreamPlaylist) StreamPlaylist {
 	}
 }
 
-func (api StreamApi) DownloadSegment(url string, target io.WriteCloser) {
+func (api StreamApi) DownloadSegment(url string, target io.Writer) {
 	segment, err := http.Get(url)
 
 	if err != nil {
@@ -140,6 +140,6 @@ func (api StreamApi) DownloadSegment(url string, target io.WriteCloser) {
 		log.Fatal(err)
 	}
 
-	pipe.Write(body)
+	target.Write(body)
 	segment.Body.Close()
 }
