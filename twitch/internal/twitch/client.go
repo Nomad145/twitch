@@ -11,7 +11,7 @@ type Client struct {
 	streamHandler LiveStream
 }
 
-const clientId = "g0m4aoe1qgv0lqais31yp27yzvw603"
+const clientId = "kimne78kx3ncx6brgo4mv6wki5h1ko"
 
 func NewClient() *Client {
 	http := &http.Client{
