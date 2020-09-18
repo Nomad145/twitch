@@ -1,6 +1,8 @@
 package twitch
 
 import (
+	"fmt"
+	"github.com/lukechampine/hey"
 	"net/http"
 	"os/exec"
 	"time"
@@ -39,6 +41,13 @@ func NewClient() *Client {
 func (client Client) Play(stream string) {
 	vlc := exec.Command("cvlc", "-")
 	pipe, _ := vlc.StdinPipe()
+
+	hey.Push(hey.Notification{
+		Title:    "Twitch",
+		Body:     fmt.Sprintf("Starting %s's stream shortly...", stream),
+		AppName:  "twitch",
+		Duration: time.Second * 15,
+	})
 
 	client.streamHandler.Start(stream, pipe)
 
