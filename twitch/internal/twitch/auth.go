@@ -26,7 +26,7 @@ func GetAccessToken() string {
 
 func buildConfig() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     clientId,
+		ClientID:     publicClientId,
 		ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
 		Scopes:       []string{"user:read:email"},
 		RedirectURL:  "http://localhost",

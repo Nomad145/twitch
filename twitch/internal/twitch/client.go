@@ -11,7 +11,8 @@ type Client struct {
 	streamHandler LiveStream
 }
 
-const clientId = "kimne78kx3ncx6brgo4mv6wki5h1ko"
+const publicClientId = "g0m4aoe1qgv0lqais31yp27yzvw603"
+const secretClientId = "kimne78kx3ncx6brgo4mv6wki5h1ko"
 
 func NewClient() *Client {
 	http := &http.Client{
@@ -22,13 +23,13 @@ func NewClient() *Client {
 
 	return &Client{
 		user: &UserApi{
-			ClientId:    clientId,
+			ClientId:    publicClientId,
 			AccessToken: accessToken,
 			Http:        http,
 		},
 		streamHandler: &HttpLiveStream{
 			provider: &TwitchProvider{
-				ClientId: clientId,
+				ClientId: secretClientId,
 				Http:     http,
 			},
 		},
