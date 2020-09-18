@@ -25,17 +25,13 @@ func (liveStream HttpLiveStream) parseMediaPlaylist(user string) {
 	segmentCache := make(map[string]string)
 	masterPlaylist := liveStream.provider.GetMasterPlaylist(user)
 
+	if masterPlaylist.Playlist == nil {
+		log.Fatal("Unable to fetch playlist")
+	}
+
+	stream := liveStream.provider.GetMediaPlaylist(masterPlaylist)
+
 	for {
-		if masterPlaylist.Playlist == nil {
-			masterPlaylist = liveStream.provider.GetMasterPlaylist(user)
-
-			log.Println("Stream playlist was empty")
-
-			continue
-		}
-
-		stream := liveStream.provider.GetMediaPlaylist(masterPlaylist)
-
 		mediaPlaylist := stream.Playlist.(*m3u8.MediaPlaylist)
 
 		for _, segment := range mediaPlaylist.Segments {
@@ -48,7 +44,6 @@ func (liveStream HttpLiveStream) parseMediaPlaylist(user string) {
 			}
 
 			if segment.Title != "live" {
-
 				continue
 			}
 
@@ -56,7 +51,7 @@ func (liveStream HttpLiveStream) parseMediaPlaylist(user string) {
 			segmentCache[segment.ProgramDateTime.String()] = segment.URI
 		}
 
-		masterPlaylist = liveStream.provider.RefreshPlaylist(masterPlaylist)
+		stream = liveStream.provider.RefreshPlaylist(stream)
 	}
 }
 
